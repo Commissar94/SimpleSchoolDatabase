@@ -12,11 +12,9 @@ public class main {
     public static void main(String[] args) {
 
         ShowMenu();
-        MenuHandler(sc.nextInt());
-
-        // CreateTeachersTable();
-        // CreatePupilsTable();
-
+        int menuChoice = sc.nextInt();
+        sc.nextLine(); //кушаем линию
+        MenuHandler(menuChoice);
     }
 
     public static void TestConnection() {
@@ -27,10 +25,8 @@ public class main {
             String query = "Insert into test(test_column) values (1)";
             Statement statement = connect.createStatement();
             statement.execute(query);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
     }
 
@@ -49,10 +45,8 @@ public class main {
             Statement statement = connect.createStatement();
             statement.execute(createTeachersTableQuery);
             System.out.println("Teachers table has been created");
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
 
     }
@@ -72,14 +66,11 @@ public class main {
             Statement statement = connect.createStatement();
             statement.execute(createTeachersTableQuery);
             System.out.println("Pupils table has been created");
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
 
     }
-
 
     public static void CreatePupil(String name, String pupilClass) {
         try {
@@ -93,54 +84,12 @@ public class main {
             preparedStatement.setString(2, pupilClass);
             preparedStatement.execute();
             System.out.printf("Pupil %s from %s has been created", name, pupilClass);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
-    }
-
-    public static void ShowMenu() {
-        System.out.println(" Welcome to Simple School Database! \n" +
-                "What you want to do? \n" +
-                "1. Create new teacher\n" +
-                "2. Create new pupil\n" +
-                "3. Show all teachers\n" +
-                "4. Show all pupils");
-        System.out.println();
-    }
-
-    public static void MenuHandler(int choice) {
-
-
-        switch (choice) {
-            case 1:
-                System.out.println("Name of the teacher: ");
-                String teacherName = sc.next();
-                sc.nextLine();
-                System.out.println("Specialization of the teacher: ");
-                String teacherSpecialization = sc.nextLine();
-                CreateTeacher(teacherName, teacherSpecialization);
-                break;
-            case 2:
-                System.out.println("Name of the pupil: ");
-                String pupilName = sc.next();
-                System.out.println("Class of the pupil: ");
-                String pupilClass = sc.next();
-                CreatePupil(pupilName, pupilClass);
-                break;
-            case 3:
-                ShowTeachers();
-                break;
-            case 4:
-                ShowPupils();
-                break;
-        }
-
     }
 
     public static void CreateTeacher(String name, String specialization) {
-
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -153,12 +102,45 @@ public class main {
             preparedStatement.setString(2, specialization);
             preparedStatement.execute();
             System.out.printf("Teacher %s of %s has been created", name, specialization);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
 
+    }
+
+    public static void ShowMenu() {
+        System.out.println(" Welcome to Simple School Database! \n" +
+                "What you want to do? \n" +
+                "1. Create new teacher\n" +
+                "2. Create new pupil\n" +
+                "3. Show all teachers\n" +
+                "4. Show all pupils\n" +
+                "5. Create teachers table\n" +
+                "6. Create pupils table\n");
+    }
+
+    public static void MenuHandler(int choice) {
+
+        switch (choice) {
+            case 1 -> {
+                System.out.println("Name of the teacher: ");
+                String teacherName = sc.nextLine();
+                System.out.println("Specialization of the teacher: ");
+                String teacherSpecialization = sc.nextLine();
+                CreateTeacher(teacherName, teacherSpecialization);
+            }
+            case 2 -> {
+                System.out.println("Name of the pupil: ");
+                String pupilName = sc.nextLine();
+                System.out.println("Class of the pupil: ");
+                String pupilClass = sc.nextLine();
+                CreatePupil(pupilName, pupilClass);
+            }
+            case 3 -> ShowTeachers();
+            case 4 -> ShowPupils();
+            case 5 -> CreateTeachersTable();
+            case 6 -> CreatePupilsTable();
+        }
 
     }
 
@@ -177,10 +159,8 @@ public class main {
                 System.out.println(Name + " " + Specialization);
             }
 
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
     }
 
@@ -199,10 +179,8 @@ public class main {
                 System.out.println(Name + " " + PupilClass);
             }
 
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
         }
     }
 }
