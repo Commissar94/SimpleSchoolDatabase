@@ -1,4 +1,3 @@
-import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -72,7 +71,7 @@ public class main {
 
     }
 
-    public static void CreatePupil(String name, String pupilClass) {
+    public static void CreatePupilInDb(Pupil pupil) {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(url, user, password);
@@ -80,28 +79,29 @@ public class main {
                     "VALUES (?,?);\n";
             Statement statement = connect.createStatement();
             PreparedStatement preparedStatement = connect.prepareStatement(insertNewPupil, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, pupilClass);
+            preparedStatement.setString(1, pupil.name);
+            preparedStatement.setString(2, pupil.pupilClass);
             preparedStatement.execute();
-            System.out.printf("Pupil %s from %s has been created", name, pupilClass);
+            System.out.printf("Pupil %s from %s has been created", pupil.name, pupil.pupilClass);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public static void CreateTeacher(String name, String specialization) {
+    public static void CreateTeacherInDb(Teacher teacher) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(url, user, password);
-            String insertNewTeacher = "INSERT INTO school.teachers (Name, Specialization) \n" +
-                    "VALUES (?,?);\n";
+            String insertNewTeacher = "INSERT INTO school.teachers (Name, Specialization, Class) \n" +
+                    "VALUES (?,?,?);\n";
             Statement statement = connect.createStatement();
             PreparedStatement preparedStatement = connect.prepareStatement(insertNewTeacher, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, specialization);
+            preparedStatement.setString(1, teacher.name);
+            preparedStatement.setString(2, teacher.specialization);
+            preparedStatement.setString(3, teacher.teacherClass);
             preparedStatement.execute();
-            System.out.printf("Teacher %s of %s has been created", name, specialization);
+            System.out.printf("Teacher %s of %s for %s has been created", teacher.name, teacher.specialization, teacher.teacherClass);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
@@ -123,18 +123,14 @@ public class main {
 
         switch (choice) {
             case 1 -> {
-                System.out.println("Name of the teacher: ");
-                String teacherName = sc.nextLine();
-                System.out.println("Specialization of the teacher: ");
-                String teacherSpecialization = sc.nextLine();
-                CreateTeacher(teacherName, teacherSpecialization);
+                System.out.println("Enter teacher's name, specialization and class");
+                Teacher teacher = new Teacher(sc.nextLine(), sc.nextLine(), sc.nextLine());
+                CreateTeacherInDb(teacher);
             }
             case 2 -> {
-                System.out.println("Name of the pupil: ");
-                String pupilName = sc.nextLine();
-                System.out.println("Class of the pupil: ");
-                String pupilClass = sc.nextLine();
-                CreatePupil(pupilName, pupilClass);
+                System.out.println("Enter pupil's name and class");
+                Pupil pupil = new Pupil(sc.nextLine(), sc.nextLine());
+                CreatePupilInDb(pupil);
             }
             case 3 -> ShowTeachers();
             case 4 -> ShowPupils();
@@ -182,5 +178,29 @@ public class main {
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
+    }
+}
+
+class Pupil {
+
+    String name;
+    String pupilClass;
+
+    Pupil(String _name, String _pupilClass) {
+        name = _name;
+        pupilClass = _pupilClass;
+    }
+}
+
+class Teacher {
+
+    String name;
+    String specialization;
+    String teacherClass;
+
+    Teacher(String _name, String _specialization, String _teacherClass) {
+        name = _name;
+        specialization = _specialization;
+        teacherClass = _teacherClass;
     }
 }
