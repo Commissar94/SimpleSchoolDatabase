@@ -7,6 +7,29 @@ public class main {
     public static String user = "root";
     public static String password = "1234";
     public static Scanner sc = new Scanner(System.in);
+    public static String createTeachersTableQuery = "create table Teachers\n" +
+            "(\n" +
+            "\tid int auto_increment,\n" +
+            "\tName char(30) not null,\n" +
+            "\tSpecialization char(30) not null,\n" +
+            "\tClass char(5) null, \n" +
+            "\tconstraint Teachers_pk\n" +
+            "\t\tprimary key (id)\n" +
+            ");";
+    public static String createPupilsTableQuery = "create table Pupils\n" +
+            "(\n" +
+            "\tId int auto_increment,\n" +
+            "\tName char(30) null,\n" +
+            "\tClass char(4) null,\n" +
+            "\tconstraint Pupils_pk\n" +
+            "\t\tprimary key (Id)\n" +
+            ");\n";
+    public static String insertNewPupilQuery = "INSERT INTO school.pupils (Name, Class) \n" +
+            "VALUES (?,?);\n";
+    public static String insertNewTeacherQuery = "INSERT INTO school.teachers (Name, Specialization, Class) \n" +
+            "VALUES (?,?,?);\n";
+    public static String showPupils = "SELECT Name,Class From pupils";
+    public static String showTeachers = "SELECT Name,Specialization,Class From teachers";
 
     public static void main(String[] args) {
 
@@ -14,6 +37,8 @@ public class main {
         int menuChoice = sc.nextInt();
         sc.nextLine(); //кушаем линию
         MenuHandler(menuChoice);
+
+
     }
 
     public static void TestConnection() {
@@ -30,82 +55,27 @@ public class main {
     }
 
     public static void CreateTeachersTable() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
-            String createTeachersTableQuery = "create table Teachers\n" +
-                    "(\n" +
-                    "\tid int auto_increment,\n" +
-                    "\tName char(30) not null,\n" +
-                    "\tSpecialization char(30) not null,\n" +
-                    "\tconstraint Teachers_pk\n" +
-                    "\t\tprimary key (id)\n" +
-                    ");";
-            Statement statement = connect.createStatement();
-            statement.execute(createTeachersTableQuery);
-            System.out.println("Teachers table has been created");
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
 
+        TableEditor forTeachers = new TableEditor();
+        System.out.println(forTeachers.newTable(url, user, password, createTeachersTableQuery));
     }
 
     public static void CreatePupilsTable() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
-            String createTeachersTableQuery = "create table Pupils\n" +
-                    "(\n" +
-                    "\tId int auto_increment,\n" +
-                    "\tName char(30) null,\n" +
-                    "\tClass char(4) null,\n" +
-                    "\tconstraint Pupils_pk\n" +
-                    "\t\tprimary key (Id)\n" +
-                    ");\n";
-            Statement statement = connect.createStatement();
-            statement.execute(createTeachersTableQuery);
-            System.out.println("Pupils table has been created");
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
 
+        TableEditor forPupils = new TableEditor();
+        System.out.println(forPupils.newTable(url, user, password, createPupilsTableQuery));
     }
 
     public static void CreatePupilInDb(Pupil pupil) {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
-            String insertNewPupil = "INSERT INTO school.pupils (Name, Class) \n" +
-                    "VALUES (?,?);\n";
-            Statement statement = connect.createStatement();
-            PreparedStatement preparedStatement = connect.prepareStatement(insertNewPupil, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, pupil.name);
-            preparedStatement.setString(2, pupil.pupilClass);
-            preparedStatement.execute();
-            System.out.printf("Pupil %s from %s has been created", pupil.name, pupil.pupilClass);
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
+
+        TableEditor te = new TableEditor();
+        System.out.println(te.newLine(url, user, password, insertNewPupilQuery, pupil));
     }
 
     public static void CreateTeacherInDb(Teacher teacher) {
 
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
-            String insertNewTeacher = "INSERT INTO school.teachers (Name, Specialization, Class) \n" +
-                    "VALUES (?,?,?);\n";
-            Statement statement = connect.createStatement();
-            PreparedStatement preparedStatement = connect.prepareStatement(insertNewTeacher, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, teacher.name);
-            preparedStatement.setString(2, teacher.specialization);
-            preparedStatement.setString(3, teacher.teacherClass);
-            preparedStatement.execute();
-            System.out.printf("Teacher %s of %s for %s has been created", teacher.name, teacher.specialization, teacher.teacherClass);
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
-
+        TableEditor te = new TableEditor();
+        System.out.println(te.newLine(url, user, password, insertNewTeacherQuery, teacher));
     }
 
     public static void ShowMenu() {
@@ -123,7 +93,7 @@ public class main {
 
         switch (choice) {
             case 1 -> {
-                System.out.println("Enter teacher's name, specialization and class");
+                System.out.println("Enter teacher's name, class and specialization");
                 Teacher teacher = new Teacher(sc.nextLine(), sc.nextLine(), sc.nextLine());
                 CreateTeacherInDb(teacher);
             }
@@ -142,65 +112,125 @@ public class main {
 
     public static void ShowTeachers() {
 
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
-            String showTeachers = "SELECT Name,Specialization From teachers";
-            Statement statement = connect.createStatement();
-            statement.executeQuery(showTeachers);
-            ResultSet resultset = statement.executeQuery(showTeachers);
-            while (resultset.next()) {
-                String Name = resultset.getString(1);
-                String Specialization = resultset.getString(2);
-                System.out.println(Name + " " + Specialization);
-            }
-
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
+        TableEditor te = new TableEditor();
+        te.showTheTable(url, user, password, showTeachers);
     }
 
     public static void ShowPupils() {
 
+        TableEditor te = new TableEditor();
+        te.showTheTable(url, user, password, showPupils);
+    }
+}
+
+class Teacher extends Human {
+
+    String specialization;
+
+    Teacher(String name, String teacherClass, String specialization) {
+        this.name = name;
+        this.schoolClass = teacherClass;
+        this.specialization = specialization;
+
+    }
+}
+
+class Pupil extends Human {
+
+    Pupil(String name, String pupilClass) {
+        this.name = name;
+        this.schoolClass = pupilClass;
+    }
+}
+
+abstract class Human {
+    String name;
+    String schoolClass;
+}
+
+interface createTable {
+
+    default String newTable(String url, String user, String password, String sqlQuery) {
+
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(url, user, password);
-            String showPupils = "SELECT Name,Class From pupils";
             Statement statement = connect.createStatement();
-            statement.executeQuery(showPupils);
-            ResultSet resultset = statement.executeQuery(showPupils);
+            statement.execute(sqlQuery);
+            return "table has been created";
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+
+}
+
+interface createLineInDB {
+    default String newLine(String url, String user, String password, String sqlQuery, Human human) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connect = DriverManager.getConnection(url, user, password);
+            Statement statement = connect.createStatement();
+            PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, human.name);
+            preparedStatement.setString(2, human.schoolClass);
+            if (human instanceof Teacher) {
+                preparedStatement.setString(3, ((Teacher) human).specialization);
+            }
+
+            preparedStatement.execute();
+            return "New line in DB has been created";
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
+
+    }
+}
+
+interface showTable {
+
+    default void showTheTable(String url, String user, String password, String sqlQuery) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connect = DriverManager.getConnection(url, user, password);
+            Statement statement = connect.createStatement();
+            statement.executeQuery(sqlQuery);
+            ResultSet resultset = statement.executeQuery(sqlQuery);
+            int columns = resultset.getMetaData().getColumnCount();
             while (resultset.next()) {
-                String Name = resultset.getString(1);
-                String PupilClass = resultset.getString(2);
-                System.out.println(Name + " " + PupilClass);
+                for (int i = 1; i < columns + 1; i++) {
+                    System.out.print(resultset.getString(i) + "\t");
+                }
+                System.out.println();
             }
 
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
+
     }
+
+
 }
 
-class Pupil {
-
-    String name;
-    String pupilClass;
-
-    Pupil(String _name, String _pupilClass) {
-        name = _name;
-        pupilClass = _pupilClass;
+class TableEditor implements createTable, createLineInDB, showTable {
+    @Override
+    public String newTable(String url, String user, String password, String sqlQuery) {
+        return createTable.super.newTable(url, user, password, sqlQuery);
     }
-}
 
-class Teacher {
+    @Override
+    public String newLine(String url, String user, String password, String sqlQuery, Human human) {
+        return createLineInDB.super.newLine(url, user, password, sqlQuery, human);
+    }
 
-    String name;
-    String specialization;
-    String teacherClass;
-
-    Teacher(String _name, String _specialization, String _teacherClass) {
-        name = _name;
-        specialization = _specialization;
-        teacherClass = _teacherClass;
+    @Override
+    public void showTheTable(String url, String user, String password, String sqlQuery) {
+        showTable.super.showTheTable(url, user, password, sqlQuery);
     }
 }
