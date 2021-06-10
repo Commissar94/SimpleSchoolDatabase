@@ -41,19 +41,6 @@ public class main {
 
     }
 
-    public static void TestConnection() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
-            System.out.println("Connected to" + url);
-            String query = "Insert into test(test_column) values (1)";
-            Statement statement = connect.createStatement();
-            statement.execute(query);
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void CreateTeachersTable() {
 
         TableEditor forTeachers = new TableEditor();
@@ -107,7 +94,6 @@ public class main {
             case 5 -> CreateTeachersTable();
             case 6 -> CreatePupilsTable();
         }
-
     }
 
     public static void ShowTeachers() {
@@ -123,6 +109,11 @@ public class main {
     }
 }
 
+abstract class Human {
+    String name;
+    String schoolClass;
+}
+
 class Teacher extends Human {
 
     String specialization;
@@ -131,7 +122,6 @@ class Teacher extends Human {
         this.name = name;
         this.schoolClass = teacherClass;
         this.specialization = specialization;
-
     }
 }
 
@@ -141,11 +131,6 @@ class Pupil extends Human {
         this.name = name;
         this.schoolClass = pupilClass;
     }
-}
-
-abstract class Human {
-    String name;
-    String schoolClass;
 }
 
 interface createTable {
@@ -163,8 +148,6 @@ interface createTable {
         }
         return "";
     }
-
-
 }
 
 interface createLineInDB {
@@ -187,7 +170,6 @@ interface createLineInDB {
             e.printStackTrace();
         }
         return "";
-
     }
 }
 
@@ -212,10 +194,7 @@ interface showTable {
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
-
     }
-
-
 }
 
 class TableEditor implements createTable, createLineInDB, showTable {
