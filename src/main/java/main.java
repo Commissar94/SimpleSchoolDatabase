@@ -1,6 +1,7 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class main {
@@ -175,7 +176,7 @@ interface createLineInDB {
 
 interface showTable {
 
-    default List<?> showTheTable(String url, String user, String password, String sqlQuery, Class returnedType) {
+    default <T> List<T> showTheTable(String url, String user, String password, String sqlQuery, Class<T> returnedType) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -194,7 +195,8 @@ interface showTable {
                         for (int i = 1; i < columns + 1; i += 3) {
                             list.add(new Teacher(resultset.getString(i), resultset.getString(i + 1), resultset.getString(i + 2)));
                         }
-                    } return list;
+                    }
+                    return (List<T>) list;
                 }
                 case "Pupil": {
                     List<Pupil> list = new ArrayList<>();
@@ -203,7 +205,7 @@ interface showTable {
                         for (int i = 1; i < columns + 1; i += 2) {
                             list.add(new Pupil(resultset.getString(i), resultset.getString(i + 1)));
                         }
-                    } return list;
+                    } return (List<T>) list;
                 }
                 default:
                     break;
@@ -232,7 +234,7 @@ class Table {
         }
 
         @Override
-        public List showTheTable(String url, String user, String password, String sqlQuery, Class returnedType) {
+        public <T> List<T> showTheTable(String url, String user, String password, String sqlQuery, Class<T> returnedType) {
             return showTable.super.showTheTable(url, user, password, sqlQuery, returnedType);
         }
     }
