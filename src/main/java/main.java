@@ -43,25 +43,25 @@ public class main {
 
     public static void CreateTeachersTable() {
 
-        TableEditor forTeachers = new TableEditor();
+        Table.TableEditor forTeachers = new Table.TableEditor();
         System.out.println(forTeachers.newTable(url, user, password, createTeachersTableQuery));
     }
 
     public static void CreatePupilsTable() {
 
-        TableEditor forPupils = new TableEditor();
+        Table.TableEditor forPupils = new Table.TableEditor();
         System.out.println(forPupils.newTable(url, user, password, createPupilsTableQuery));
     }
 
     public static void CreatePupilInDb(Pupil pupil) {
 
-        TableEditor te = new TableEditor();
+        Table.TableEditor te = new Table.TableEditor();
         System.out.println(te.newLine(url, user, password, insertNewPupilQuery, pupil));
     }
 
     public static void CreateTeacherInDb(Teacher teacher) {
 
-        TableEditor te = new TableEditor();
+        Table.TableEditor te = new Table.TableEditor();
         System.out.println(te.newLine(url, user, password, insertNewTeacherQuery, teacher));
     }
 
@@ -98,14 +98,14 @@ public class main {
 
     public static void ShowTeachers() {
 
-        TableEditor te = new TableEditor();
-        te.showTheTable(url, user, password, showTeachers);
+        Table.TableEditor te = new Table.TableEditor();
+        System.out.println(te.showTheTable(url, user, password, showTeachers).table);
     }
 
     public static void ShowPupils() {
 
-        TableEditor te = new TableEditor();
-        te.showTheTable(url, user, password, showPupils);
+        Table.TableEditor te = new Table.TableEditor();
+        System.out.println(te.showTheTable(url, user, password, showPupils).table);
     }
 }
 
@@ -175,8 +175,9 @@ interface createLineInDB {
 
 interface showTable {
 
-    default void showTheTable(String url, String user, String password, String sqlQuery) {
-
+    default Table showTheTable(String url, String user, String password, String sqlQuery) {
+        Table resultTable = new Table();
+        StringBuilder result = new StringBuilder();
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(url, user, password);
@@ -184,32 +185,40 @@ interface showTable {
             statement.executeQuery(sqlQuery);
             ResultSet resultset = statement.executeQuery(sqlQuery);
             int columns = resultset.getMetaData().getColumnCount();
+
             while (resultset.next()) {
                 for (int i = 1; i < columns + 1; i++) {
-                    System.out.print(resultset.getString(i) + "\t");
+                    result.append(resultset.getString(i)).append(" ");
                 }
-                System.out.println();
+                result.append(System.getProperty("line.separator"));
             }
 
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
+        resultTable.table = result;
+        return resultTable;
     }
 }
 
-class TableEditor implements createTable, createLineInDB, showTable {
-    @Override
-    public String newTable(String url, String user, String password, String sqlQuery) {
-        return createTable.super.newTable(url, user, password, sqlQuery);
+class Table {
+    StringBuilder table = new StringBuilder("");
+
+    static class TableEditor implements createTable, createLineInDB, showTable {
+        @Override
+        public String newTable(String url, String user, String password, String sqlQuery) {
+            return createTable.super.newTable(url, user, password, sqlQuery);
+        }
+
+        @Override
+        public String newLine(String url, String user, String password, String sqlQuery, Human human) {
+            return createLineInDB.super.newLine(url, user, password, sqlQuery, human);
+        }
+
+        @Override
+        public Table showTheTable(String url, String user, String password, String sqlQuery) {
+            return showTable.super.showTheTable(url, user, password, sqlQuery);
+        }
     }
 
-    @Override
-    public String newLine(String url, String user, String password, String sqlQuery, Human human) {
-        return createLineInDB.super.newLine(url, user, password, sqlQuery, human);
-    }
-
-    @Override
-    public void showTheTable(String url, String user, String password, String sqlQuery) {
-        showTable.super.showTheTable(url, user, password, sqlQuery);
-    }
 }
