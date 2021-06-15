@@ -1,4 +1,6 @@
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class main {
@@ -96,16 +98,34 @@ public class main {
         }
     }
 
-    public static void ShowTeachers() {
+    public static List<Teacher> ShowTeachers() {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println(te.showTheTable(url, user, password, showTeachers).table);
+
+        String[] test = te.showTheTable(url, user, password, showTeachers).table.toString().split("\\r?\\n");
+
+        List<Teacher> list = new ArrayList<>();
+        for (String s : test) {
+            String[] line = s.split(" ");
+            list.add(new Teacher(line[0], line[1], line[2]));
+            //System.out.println(line[0] + " " + line[1] + " " + line[2]);
+        }
+        return list;
     }
 
-    public static void ShowPupils() {
+    public static List<Pupil> ShowPupils() {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println(te.showTheTable(url, user, password, showPupils).table);
+
+        String[] test = te.showTheTable(url, user, password, showPupils).table.toString().split("\\r?\\n");
+
+        List<Pupil> list = new ArrayList<>();
+        for (String s : test) {
+            String[] line = s.split(" ");
+            list.add(new Pupil(line[0], line[1]));
+            //System.out.println(line[0] + " " + line[1]);
+        }
+        return list;
     }
 }
 
