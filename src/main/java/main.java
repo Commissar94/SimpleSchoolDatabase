@@ -39,8 +39,6 @@ public class main {
         int menuChoice = sc.nextInt();
         sc.nextLine(); //кушаем линию
         MenuHandler(menuChoice);
-
-
     }
 
     public static void CreateTeachersTable() {
@@ -101,31 +99,13 @@ public class main {
     public static List<Teacher> ShowTeachers() {
 
         Table.TableEditor te = new Table.TableEditor();
-
-        String[] test = te.showTheTable(url, user, password, showTeachers).table.toString().split("\\r?\\n");
-
-        List<Teacher> list = new ArrayList<>();
-        for (String s : test) {
-            String[] line = s.split(" ");
-            list.add(new Teacher(line[0], line[1], line[2]));
-            //System.out.println(line[0] + " " + line[1] + " " + line[2]);
-        }
-        return list;
+        return te.showTheTable(url, user, password, showTeachers, Teacher.class);
     }
 
     public static List<Pupil> ShowPupils() {
 
         Table.TableEditor te = new Table.TableEditor();
-
-        String[] test = te.showTheTable(url, user, password, showPupils).table.toString().split("\\r?\\n");
-
-        List<Pupil> list = new ArrayList<>();
-        for (String s : test) {
-            String[] line = s.split(" ");
-            list.add(new Pupil(line[0], line[1]));
-            //System.out.println(line[0] + " " + line[1]);
-        }
-        return list;
+        return te.showTheTable(url, user, password, showPupils, Pupil.class);
     }
 }
 
@@ -195,9 +175,8 @@ interface createLineInDB {
 
 interface showTable {
 
-    default Table showTheTable(String url, String user, String password, String sqlQuery) {
-        Table resultTable = new Table();
-        StringBuilder result = new StringBuilder();
+    default List<?> showTheTable(String url, String user, String password, String sqlQuery, Class returnedType) {
+
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(url, user, password);
@@ -206,23 +185,40 @@ interface showTable {
             ResultSet resultset = statement.executeQuery(sqlQuery);
             int columns = resultset.getMetaData().getColumnCount();
 
-            while (resultset.next()) {
-                for (int i = 1; i < columns + 1; i++) {
-                    result.append(resultset.getString(i)).append(" ");
+
+            switch (returnedType.getName()) {
+                case "Teacher": {
+                    List<Teacher> list = new ArrayList<>();
+
+                    while (resultset.next()) {
+                        for (int i = 1; i < columns + 1; i += 3) {
+                            list.add(new Teacher(resultset.getString(i), resultset.getString(i + 1), resultset.getString(i + 2)));
+                        }
+                    } return list;
                 }
-                result.append(System.getProperty("line.separator"));
+                case "Pupil": {
+                    List<Pupil> list = new ArrayList<>();
+
+                    while (resultset.next()) {
+                        for (int i = 1; i < columns + 1; i += 2) {
+                            list.add(new Pupil(resultset.getString(i), resultset.getString(i + 1)));
+                        }
+                    } return list;
+                }
+                default:
+                    break;
             }
 
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
-        resultTable.table = result;
-        return resultTable;
+
+        List smth = new ArrayList<>();
+        return smth;
     }
 }
 
 class Table {
-    StringBuilder table = new StringBuilder("");
 
     static class TableEditor implements createTable, createLineInDB, showTable {
         @Override
@@ -236,8 +232,8 @@ class Table {
         }
 
         @Override
-        public Table showTheTable(String url, String user, String password, String sqlQuery) {
-            return showTable.super.showTheTable(url, user, password, sqlQuery);
+        public List showTheTable(String url, String user, String password, String sqlQuery, Class returnedType) {
+            return showTable.super.showTheTable(url, user, password, sqlQuery, returnedType);
         }
     }
 
