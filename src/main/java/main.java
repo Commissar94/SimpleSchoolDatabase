@@ -60,16 +60,16 @@ public class main {
         System.out.println(forPupils.newTable(url, user, password, createPupilsTableQuery));
     }
 
-    public static void CreatePupilInDb(Pupil pupil) {
+    public static void CreatePupilInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println("New record of " + te.newLine(url, user, password, insertNewPupilQuery, pupil).getClass() + " has been created");
+        System.out.println("New record of " + te.newLine(url, user, password, insertNewPupilQuery, human).getClass() + " has been created");
     }
 
-    public static void CreateTeacherInDb(Teacher teacher) {
+    public static void CreateTeacherInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println("New record of " + te.newLine(url, user, password, insertNewTeacherQuery, teacher).getClass() + " has been created");
+        System.out.println("New record of " + te.newLine(url, user, password, insertNewTeacherQuery, human).getClass() + " has been created");
     }
 
     public static void ShowMenu() {
@@ -96,7 +96,6 @@ public class main {
             case 2 -> {
                 System.out.println("Enter pupil's name and class");
                 Pupil pupil = new Pupil(sc.nextLine(), sc.nextLine());
-
                 CreatePupilInDb(pupil);
             }
             case 3 -> ShowTeachers();
@@ -161,31 +160,50 @@ interface createTable {
 }
 
 interface createLineInDB {
-    default Object newLine(String url, String user, String password, String sqlQuery, Human human) {
+    default Human newLine(String url, String user, String password, String sqlQuery, Human human) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(url, user, password);
             PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
 
-            if (human instanceof Pupil) {
-                Pupil pup = new Pupil(human.name, human.schoolClass);
-                preparedStatement.setString(1, pup.name);
-                preparedStatement.setString(2, pup.schoolClass);
-                preparedStatement.execute();
-                return pup;
-            } else if (human instanceof Teacher) {
-                Teacher tea = new Teacher(human.name, human.schoolClass, ((Teacher) human).specialization);
-                preparedStatement.setString(1, tea.name);
-                preparedStatement.setString(2, tea.schoolClass);
-                preparedStatement.setString(3, tea.specialization);
-                preparedStatement.execute();
-                return tea;
+          switch (human.getClass().getName()) {
+
+                case "Teacher":
+                    Teacher teacher = (Teacher) human;
+                    preparedStatement.setString(1, teacher.name);
+                    preparedStatement.setString(2, teacher.schoolClass);
+                    preparedStatement.setString(3, teacher.specialization);
+                    preparedStatement.execute();
+                    return teacher;
+                case "Pupil":
+                    Pupil pupil = (Pupil) human;
+                    preparedStatement.setString(1, pupil.name);
+                    preparedStatement.setString(2, pupil.schoolClass);
+                    preparedStatement.execute();
+                    return pupil;
+                default:
+                    break;
             }
+
+//            if (human instanceof Pupil) {
+//                Pupil pup = new Pupil(human.name, human.schoolClass);
+//                preparedStatement.setString(1, pup.name);
+//                preparedStatement.setString(2, pup.schoolClass);
+//                preparedStatement.execute();
+//                return pup;
+//            } else if (human instanceof Teacher) {
+//                Teacher tea = new Teacher(human.name, human.schoolClass, ((Teacher) human).specialization);
+//                preparedStatement.setString(1, tea.name);
+//                preparedStatement.setString(2, tea.schoolClass);
+//                preparedStatement.setString(3, tea.specialization);
+//                preparedStatement.execute();
+//                return tea;
+//            }
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
-        return "";
+        return human;
     }
 }
 
@@ -244,8 +262,9 @@ class Table {
             return createTable.super.newTable(url, user, password, sqlQuery);
         }
 
+
         @Override
-        public Object newLine(String url, String user, String password, String sqlQuery, Human human) {
+        public Human newLine(String url, String user, String password, String sqlQuery, Human human) {
             return createLineInDB.super.newLine(url, user, password, sqlQuery, human);
         }
 
