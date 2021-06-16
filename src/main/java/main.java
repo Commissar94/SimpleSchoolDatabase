@@ -60,16 +60,16 @@ public class main {
         System.out.println(forPupils.newTable(url, user, password, createPupilsTableQuery));
     }
 
-    public static void CreatePupilInDb(Human human) {
+    public static String CreatePupilInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println("New record of " + te.newLine(url, user, password, insertNewPupilQuery, human).getClass() + " has been created");
+        return "New record of " + te.newLine(url, user, password, insertNewPupilQuery, human).getClass() + " has been created";
     }
 
-    public static void CreateTeacherInDb(Human human) {
+    public static String CreateTeacherInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println("New record of " + te.newLine(url, user, password, insertNewTeacherQuery, human).getClass() + " has been created");
+        return "New record of " + te.newLine(url, user, password, insertNewTeacherQuery, human).getClass() + " has been created";
     }
 
     public static void ShowMenu() {
@@ -167,7 +167,7 @@ interface createLineInDB {
             Connection connect = DriverManager.getConnection(url, user, password);
             PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
 
-          switch (human.getClass().getName()) {
+            switch (human.getClass().getName()) {
 
                 case "Teacher":
                     Teacher teacher = (Teacher) human;
