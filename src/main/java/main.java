@@ -1,7 +1,6 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 public class main {
@@ -10,27 +9,34 @@ public class main {
     public static String user = "root";
     public static String password = "1234";
     public static Scanner sc = new Scanner(System.in);
-    public static String createTeachersTableQuery = "create table Teachers\n" +
-            "(\n" +
-            "\tid int auto_increment,\n" +
-            "\tName char(30) not null,\n" +
-            "\tSpecialization char(30) not null,\n" +
-            "\tClass char(5) null, \n" +
-            "\tconstraint Teachers_pk\n" +
-            "\t\tprimary key (id)\n" +
-            ");";
-    public static String createPupilsTableQuery = "create table Pupils\n" +
-            "(\n" +
-            "\tId int auto_increment,\n" +
-            "\tName char(30) null,\n" +
-            "\tClass char(4) null,\n" +
-            "\tconstraint Pupils_pk\n" +
-            "\t\tprimary key (Id)\n" +
-            ");\n";
-    public static String insertNewPupilQuery = "INSERT INTO school.pupils (Name, Class) \n" +
-            "VALUES (?,?);\n";
-    public static String insertNewTeacherQuery = "INSERT INTO school.teachers (Name, Specialization, Class) \n" +
-            "VALUES (?,?,?);\n";
+    public static String createTeachersTableQuery = """
+            create table Teachers
+            (
+            \tid int auto_increment,
+            \tName char(30) not null,
+            \tSpecialization char(30) not null,
+            \tClass char(5) null,\s
+            \tconstraint Teachers_pk
+            \t\tprimary key (id)
+            );""";
+    public static String createPupilsTableQuery = """
+            create table Pupils
+            (
+            \tId int auto_increment,
+            \tName char(30) null,
+            \tClass char(4) null,
+            \tconstraint Pupils_pk
+            \t\tprimary key (Id)
+            );
+            """;
+    public static String insertNewPupilQuery = """
+            INSERT INTO school.pupils (Name, Class)\s
+            VALUES (?,?);
+            """;
+    public static String insertNewTeacherQuery = """
+            INSERT INTO school.teachers (Name, Specialization, Class)\s
+            VALUES (?,?,?);
+            """;
     public static String showPupils = "SELECT Name,Class From pupils";
     public static String showTeachers = "SELECT Name,Specialization,Class From teachers";
 
@@ -57,24 +63,26 @@ public class main {
     public static void CreatePupilInDb(Pupil pupil) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println(te.newLine(url, user, password, insertNewPupilQuery, pupil));
+        System.out.println("New record of " + te.newLine(url, user, password, insertNewPupilQuery, pupil).getClass() + " has been created");
     }
 
     public static void CreateTeacherInDb(Teacher teacher) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println(te.newLine(url, user, password, insertNewTeacherQuery, teacher));
+        System.out.println("New record of " + te.newLine(url, user, password, insertNewTeacherQuery, teacher).getClass() + " has been created");
     }
 
     public static void ShowMenu() {
-        System.out.println(" Welcome to Simple School Database! \n" +
-                "What you want to do? \n" +
-                "1. Create new teacher\n" +
-                "2. Create new pupil\n" +
-                "3. Show all teachers\n" +
-                "4. Show all pupils\n" +
-                "5. Create teachers table\n" +
-                "6. Create pupils table\n");
+        System.out.println("""
+                 Welcome to Simple School Database!\s
+                What you want to do?\s
+                1. Create new teacher
+                2. Create new pupil
+                3. Show all teachers
+                4. Show all pupils
+                5. Create teachers table
+                6. Create pupils table
+                """);
     }
 
     public static void MenuHandler(int choice) {
@@ -88,6 +96,7 @@ public class main {
             case 2 -> {
                 System.out.println("Enter pupil's name and class");
                 Pupil pupil = new Pupil(sc.nextLine(), sc.nextLine());
+
                 CreatePupilInDb(pupil);
             }
             case 3 -> ShowTeachers();
@@ -152,21 +161,27 @@ interface createTable {
 }
 
 interface createLineInDB {
-    default String newLine(String url, String user, String password, String sqlQuery, Human human) {
+    default Object newLine(String url, String user, String password, String sqlQuery, Human human) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(url, user, password);
-            Statement statement = connect.createStatement();
             PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, human.name);
-            preparedStatement.setString(2, human.schoolClass);
-            if (human instanceof Teacher) {
-                preparedStatement.setString(3, ((Teacher) human).specialization);
-            }
 
-            preparedStatement.execute();
-            return "New line in DB has been created";
+            if (human instanceof Pupil) {
+                Pupil pup = new Pupil(human.name, human.schoolClass);
+                preparedStatement.setString(1, pup.name);
+                preparedStatement.setString(2, pup.schoolClass);
+                preparedStatement.execute();
+                return pup;
+            } else if (human instanceof Teacher) {
+                Teacher tea = new Teacher(human.name, human.schoolClass, ((Teacher) human).specialization);
+                preparedStatement.setString(1, tea.name);
+                preparedStatement.setString(2, tea.schoolClass);
+                preparedStatement.setString(3, tea.specialization);
+                preparedStatement.execute();
+                return tea;
+            }
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
@@ -205,7 +220,8 @@ interface showTable {
                         for (int i = 1; i < columns + 1; i += 2) {
                             list.add(new Pupil(resultset.getString(i), resultset.getString(i + 1)));
                         }
-                    } return (List<T>) list;
+                    }
+                    return (List<T>) list;
                 }
                 default:
                     break;
@@ -229,7 +245,7 @@ class Table {
         }
 
         @Override
-        public String newLine(String url, String user, String password, String sqlQuery, Human human) {
+        public Object newLine(String url, String user, String password, String sqlQuery, Human human) {
             return createLineInDB.super.newLine(url, user, password, sqlQuery, human);
         }
 
