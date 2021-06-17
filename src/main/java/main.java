@@ -39,6 +39,14 @@ public class main {
             """;
     public static String showPupils = "SELECT Name,Class From pupils";
     public static String showTeachers = "SELECT Name,Specialization,Class From teachers";
+    public static String showLastPupilRecord = "SELECT Id,Name,Class FROM pupils ORDER BY ID DESC LIMIT 1";
+    public static String showLastTeacherRecord = "SELECT * FROM teachers ORDER BY ID DESC LIMIT 1";
+    public static String fingPupilById = """
+            Select Name,Class FROM pupils where pupils.Id =?;
+            """;
+    public static String fingTeacherById = """
+            Select Name,Specialization,Class FROM teachers where teachers.Id =?;
+            """;
 
     public static void main(String[] args) {
 
@@ -60,16 +68,32 @@ public class main {
         System.out.println(forPupils.newTable(url, user, password, createPupilsTableQuery));
     }
 
-    public static String CreatePupilInDb(Human human) {
+    public static Human CreatePupilInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        return "New record of " + te.newLine(url, user, password, insertNewPupilQuery, human).getClass() + " has been created";
+        System.out.println("New record of " + te.newLine(url, user, password, insertNewPupilQuery, human).getClass() + " has been created");
+        Human createdHuman = te.showTheLastLine(url, user, password, showLastPupilRecord, human);
+        // System.out.println(createdHuman.id + " " + createdHuman.name)
+        return createdHuman;
     }
 
-    public static String CreateTeacherInDb(Human human) {
+    public static Human CreateTeacherInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        return "New record of " + te.newLine(url, user, password, insertNewTeacherQuery, human).getClass() + " has been created";
+        System.out.println("New record of " + te.newLine(url, user, password, insertNewTeacherQuery, human).getClass() + " has been created");
+        Human createdHuman = te.showTheLastLine(url, user, password, showLastTeacherRecord, human);
+        // System.out.println(createdHuman.id + " " + createdHuman.name);
+        return human;
+    }
+
+    public static Human UpdateTeacherInDb(Human human) {
+
+        return human;
+    }
+
+    public static Human UpdatePupilInDb(Human human) {
+
+        return human;
     }
 
     public static void ShowMenu() {
@@ -82,6 +106,8 @@ public class main {
                 4. Show all pupils
                 5. Create teachers table
                 6. Create pupils table
+                7. Update teacher
+                8. Update pupil
                 """);
     }
 
@@ -102,6 +128,21 @@ public class main {
             case 4 -> ShowPupils();
             case 5 -> CreateTeachersTable();
             case 6 -> CreatePupilsTable();
+            case 7 -> {
+                System.out.println("Enter teacher's id for updating his record");
+                Teacher teacher = new Teacher(sc.nextLong());
+                Table.TableEditor te = new Table.TableEditor();
+                Teacher teacherFromDb = (Teacher) te.showTheLine(url, user, password, fingTeacherById, teacher);
+                // System.out.println(teacher1.name);
+                // getHuman(teacher);
+            }
+            case 8 -> {
+                System.out.println("Enter pupil's id for updating his record");
+                Pupil pupil = new Pupil(sc.nextInt());
+                Table.TableEditor te = new Table.TableEditor();
+                Pupil pupilFromDb = (Pupil) te.showTheLine(url, user, password, fingPupilById, pupil);
+                // UpdatePupilInDb(pupil);
+            }
         }
     }
 
@@ -119,6 +160,7 @@ public class main {
 }
 
 abstract class Human {
+    long id;
     String name;
     String schoolClass;
 }
@@ -132,11 +174,32 @@ class Teacher extends Human {
         this.schoolClass = teacherClass;
         this.specialization = specialization;
     }
+
+    public Teacher(long id) {
+        this.id = id;
+    }
+
+    public Teacher(long id, String name, String teacherClass, String specialization) {
+        this.id = id;
+        this.name = name;
+        this.schoolClass = teacherClass;
+        this.specialization = specialization;
+    }
 }
 
 class Pupil extends Human {
 
     Pupil(String name, String pupilClass) {
+        this.name = name;
+        this.schoolClass = pupilClass;
+    }
+
+    public Pupil(long id) {
+        this.id = id;
+    }
+
+    public Pupil(long id, String name, String pupilClass) {
+        this.id = id;
         this.name = name;
         this.schoolClass = pupilClass;
     }
@@ -172,8 +235,8 @@ interface createLineInDB {
                 case "Teacher":
                     Teacher teacher = (Teacher) human;
                     preparedStatement.setString(1, teacher.name);
-                    preparedStatement.setString(2, teacher.schoolClass);
-                    preparedStatement.setString(3, teacher.specialization);
+                    preparedStatement.setString(2, teacher.specialization);
+                    preparedStatement.setString(3, teacher.schoolClass);
                     preparedStatement.execute();
                     return teacher;
                 case "Pupil":
@@ -185,23 +248,66 @@ interface createLineInDB {
                 default:
                     break;
             }
-
-//            if (human instanceof Pupil) {
-//                Pupil pup = new Pupil(human.name, human.schoolClass);
-//                preparedStatement.setString(1, pup.name);
-//                preparedStatement.setString(2, pup.schoolClass);
-//                preparedStatement.execute();
-//                return pup;
-//            } else if (human instanceof Teacher) {
-//                Teacher tea = new Teacher(human.name, human.schoolClass, ((Teacher) human).specialization);
-//                preparedStatement.setString(1, tea.name);
-//                preparedStatement.setString(2, tea.schoolClass);
-//                preparedStatement.setString(3, tea.specialization);
-//                preparedStatement.execute();
-//                return tea;
-//            }
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
+        }
+        return human;
+    }
+}
+
+//interface getHuman {
+//
+//    default Human getHumanById(String url, String user, String password, String sqlQuery, Human human) {
+//
+//        try {
+//            Class.forName("com.mysql.jdbc.Driver");
+//            Connection connect = DriverManager.getConnection(url, user, password);
+//            PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+//
+//            switch (human.getClass().getName()) {
+//                case "Teacher":
+//                    Teacher teacher = (Teacher) human;
+//                    preparedStatement.setString(1, teacher.name);
+//                    preparedStatement.setString(2, teacher.specialization);
+//                    preparedStatement.setString(3, teacher.schoolClass);
+//                    preparedStatement.execute();
+//                    return teacher;
+//                case "Pupil":
+//                    Pupil pupil = (Pupil) human;
+//                    preparedStatement.setString(1, pupil.name);
+//                    preparedStatement.setString(2, pupil.schoolClass);
+//                    preparedStatement.execute();
+//                    return pupil;
+//                default:
+//                    break;
+//            }
+//
+//
+//        } catch (ClassNotFoundException | SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return human;
+//
+//    }
+
+
+interface updateLineInDB {
+
+    default Human updateTheLine(Human human) {
+        Scanner sc = new Scanner(System.in);
+        switch (human.getClass().getName()) {
+            case "Teacher": {
+
+                System.out.println("Enter new name, class and specialization of teacher #" + human.id);
+                Teacher teacher = new Teacher(human.id, sc.nextLine(), sc.nextLine(), sc.nextLine());
+            }
+            case "Pupil": {
+                System.out.println("Enter new name, class and specialization of teacher #" + human.id);
+                Pupil pupil = new Pupil(human.id, sc.nextLine(), sc.nextLine());
+
+            }
+            default:
+                break;
         }
         return human;
     }
@@ -254,14 +360,97 @@ interface showTable {
     }
 }
 
+interface showLastLineInDB {
+
+    default Human showTheLastLine(String url, String user, String password, String sqlQuery, Human human) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connect = DriverManager.getConnection(url, user, password);
+            Statement statement = connect.createStatement();
+            statement.executeQuery(sqlQuery);
+            ResultSet resultset = statement.executeQuery(sqlQuery);
+
+
+            switch (human.getClass().getName()) {
+                case "Teacher": {
+                    if (resultset.next()) {
+                        Teacher teacher = new Teacher(resultset.getInt(1), resultset.getString(2), resultset.getString(3), resultset.getString(4));
+                        return teacher;
+                    }
+                }
+                case "Pupil": {
+
+                    if (resultset.next()) {
+                        Pupil pupil = new Pupil(resultset.getLong(1), resultset.getString(2), resultset.getString(3));
+                        return pupil;
+                    }
+
+                }
+                default:
+                    break;
+            }
+
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+
+        return human;
+    }
+
+
+}
+
+interface showLineInDB {
+
+    default Human showTheLine(String url, String user, String password, String sqlQuery, Human human) { //сюда приходит скл на поиск по айдишнику, мы его берем из хумана
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connect = DriverManager.getConnection(url, user, password);
+            PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery);
+            preparedStatement.setLong(1, human.id);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            switch (human.getClass().getName()) {
+
+                case "Teacher":
+                    while (rs.next()) {
+                        System.out.println(rs.getString(1));
+                        System.out.println(rs.getString(2));
+                        System.out.println(rs.getString(3));
+                        return new Teacher(rs.getString(1), rs.getString(2), rs.getString(3));
+                    }
+
+                case "Pupil":
+                    while (rs.next()) {
+                        System.out.println(rs.getString(1));
+                        System.out.println(rs.getString(2));
+                        return new Pupil(rs.getString(1), rs.getString(2));
+                    }
+
+                default:
+                    break;
+            }
+
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+
+        return human;
+    }
+
+}
+
 class Table {
 
-    static class TableEditor implements createTable, createLineInDB, showTable {
+    static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB {
         @Override
         public String newTable(String url, String user, String password, String sqlQuery) {
             return createTable.super.newTable(url, user, password, sqlQuery);
         }
-
 
         @Override
         public Human newLine(String url, String user, String password, String sqlQuery, Human human) {
@@ -271,6 +460,16 @@ class Table {
         @Override
         public <T> List<T> showTheTable(String url, String user, String password, String sqlQuery, Class<T> returnedType) {
             return showTable.super.showTheTable(url, user, password, sqlQuery, returnedType);
+        }
+
+        @Override
+        public Human showTheLastLine(String url, String user, String password, String sqlQuery, Human human) {
+            return showLastLineInDB.super.showTheLastLine(url, user, password, sqlQuery, human);
+        }
+
+        @Override
+        public Human showTheLine(String url, String user, String password, String sqlQuery, Human human) {
+            return showLineInDB.super.showTheLine(url, user, password, sqlQuery, human);
         }
     }
 
