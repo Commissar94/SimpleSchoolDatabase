@@ -3,7 +3,7 @@ package SQL;
 public class CreateTable {
 
     public static String createTeachersTableQuery = """
-            create table Teachers
+            create table IF NOT EXISTS Teachers
             (
             \tid int auto_increment,
             \tName char(30) not null,
@@ -14,7 +14,7 @@ public class CreateTable {
             );""";
 
     public static String createPupilsTableQuery = """
-            create table Pupils
+            create table IF NOT EXISTS Pupils
             (
             \tId int auto_increment,
             \tName char(30) null,
