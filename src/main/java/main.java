@@ -47,6 +47,19 @@ public class main {
     public static String fingTeacherById = """
             Select Name,Specialization,Class FROM teachers where teachers.Id =?;
             """;
+    public static String updatePupils = """
+            UPDATE pupils
+            set Name  = ?,
+                Class = ?
+            where id = ?;
+            """;
+    public static String updateTeachers = """
+            UPDATE teachers
+            set Name          = ?,
+                Specialization= ?,
+                Class         = ?
+            where id = ?;
+            """;
 
     public static void main(String[] args) {
 
@@ -83,16 +96,6 @@ public class main {
         System.out.println("New record of " + te.newLine(url, user, password, insertNewTeacherQuery, human).getClass() + " has been created");
         Human createdHuman = te.showTheLastLine(url, user, password, showLastTeacherRecord, human);
         // System.out.println(createdHuman.id + " " + createdHuman.name);
-        return human;
-    }
-
-    public static Human UpdateTeacherInDb(Human human) {
-
-        return human;
-    }
-
-    public static Human UpdatePupilInDb(Human human) {
-
         return human;
     }
 
@@ -133,15 +136,24 @@ public class main {
                 Teacher teacher = new Teacher(sc.nextLong());
                 Table.TableEditor te = new Table.TableEditor();
                 Teacher teacherFromDb = (Teacher) te.showTheLine(url, user, password, fingTeacherById, teacher);
-                // System.out.println(teacher1.name);
-                // getHuman(teacher);
+                System.out.println("Enter new name, specialization and class of the teacher");
+                sc.nextLine(); //кушаем линию
+                Teacher teacherForUpdate = new Teacher(teacherFromDb.id, sc.nextLine(), sc.nextLine(), sc.nextLine());
+
+                te.updateTheLine(url, user, password, updateTeachers, teacherForUpdate);
+                System.out.println("Record with id #" + "" + teacherForUpdate.id + " is " + teacherForUpdate.name + " " + teacherForUpdate.specialization + " " + teacherForUpdate.schoolClass);
             }
             case 8 -> {
                 System.out.println("Enter pupil's id for updating his record");
-                Pupil pupil = new Pupil(sc.nextInt());
+                Pupil pupil = new Pupil(sc.nextLong());
                 Table.TableEditor te = new Table.TableEditor();
                 Pupil pupilFromDb = (Pupil) te.showTheLine(url, user, password, fingPupilById, pupil);
-                // UpdatePupilInDb(pupil);
+                System.out.println("Enter new name and class of the pupil");
+                sc.nextLine(); //кушаем линию
+                Pupil pupilForUpdate = new Pupil(pupilFromDb.id, sc.nextLine(), sc.nextLine());
+
+                te.updateTheLine(url, user, password, updatePupils, pupilForUpdate);
+                System.out.println("Record with id #" + "" + pupilForUpdate.id + " is " + pupilForUpdate.name + " " + pupilForUpdate.schoolClass);
             }
         }
     }
@@ -293,22 +305,38 @@ interface createLineInDB {
 
 interface updateLineInDB {
 
-    default Human updateTheLine(Human human) {
-        Scanner sc = new Scanner(System.in);
-        switch (human.getClass().getName()) {
-            case "Teacher": {
+    default Human updateTheLine(String url, String user, String password, String sqlQuery, Human human) {
 
-                System.out.println("Enter new name, class and specialization of teacher #" + human.id);
-                Teacher teacher = new Teacher(human.id, sc.nextLine(), sc.nextLine(), sc.nextLine());
-            }
-            case "Pupil": {
-                System.out.println("Enter new name, class and specialization of teacher #" + human.id);
-                Pupil pupil = new Pupil(human.id, sc.nextLine(), sc.nextLine());
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connect = DriverManager.getConnection(url, user, password);
+            PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery);
 
+            switch (human.getClass().getName()) {
+                case "Teacher": {
+                    Teacher teacher = (Teacher) human;
+                    preparedStatement.setString(1, teacher.name);
+                    preparedStatement.setString(2, teacher.specialization);
+                    preparedStatement.setString(3, teacher.schoolClass);
+                    preparedStatement.setLong(4, teacher.id);
+                    preparedStatement.execute();
+                }
+                case "Pupil": {
+                    Pupil pupil = (Pupil) human;
+                    preparedStatement.setString(1, pupil.name);
+                    preparedStatement.setString(2, pupil.schoolClass);
+                    preparedStatement.setLong(3, pupil.id);
+                    preparedStatement.execute();
+                }
+                default:
+                    break;
             }
-            default:
-                break;
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
         }
+
+
         return human;
     }
 }
@@ -404,7 +432,7 @@ interface showLastLineInDB {
 
 interface showLineInDB {
 
-    default Human showTheLine(String url, String user, String password, String sqlQuery, Human human) { //сюда приходит скл на поиск по айдишнику, мы его берем из хумана
+    default Human showTheLine(String url, String user, String password, String sqlQuery, Human human) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -417,17 +445,14 @@ interface showLineInDB {
 
                 case "Teacher":
                     while (rs.next()) {
-                        System.out.println(rs.getString(1));
-                        System.out.println(rs.getString(2));
-                        System.out.println(rs.getString(3));
-                        return new Teacher(rs.getString(1), rs.getString(2), rs.getString(3));
+                        return new Teacher(human.id, rs.getString(1), rs.getString(2), rs.getString(3));
                     }
 
                 case "Pupil":
                     while (rs.next()) {
                         System.out.println(rs.getString(1));
                         System.out.println(rs.getString(2));
-                        return new Pupil(rs.getString(1), rs.getString(2));
+                        return new Pupil(human.id, rs.getString(1), rs.getString(2));
                     }
 
                 default:
@@ -446,7 +471,7 @@ interface showLineInDB {
 
 class Table {
 
-    static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB {
+    static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB {
         @Override
         public String newTable(String url, String user, String password, String sqlQuery) {
             return createTable.super.newTable(url, user, password, sqlQuery);
@@ -470,6 +495,11 @@ class Table {
         @Override
         public Human showTheLine(String url, String user, String password, String sqlQuery, Human human) {
             return showLineInDB.super.showTheLine(url, user, password, sqlQuery, human);
+        }
+
+        @Override
+        public Human updateTheLine(String url, String user, String password, String sqlQuery, Human human) {
+            return updateLineInDB.super.updateTheLine(url, user, password, sqlQuery, human);
         }
     }
 
