@@ -3,63 +3,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import SQL.*;
+
 public class main {
 
-    public static String url = "jdbc:mysql://localhost:3306/school";
-    public static String user = "root";
-    public static String password = "1234";
+    public static ConnectData connectData = new ConnectData("School"); //получаем данные для подключения к базе "Школа"
+
     public static Scanner sc = new Scanner(System.in);
-    public static String createTeachersTableQuery = """
-            create table Teachers
-            (
-            \tid int auto_increment,
-            \tName char(30) not null,
-            \tSpecialization char(30) not null,
-            \tClass char(5) null,\s
-            \tconstraint Teachers_pk
-            \t\tprimary key (id)
-            );""";
-    public static String createPupilsTableQuery = """
-            create table Pupils
-            (
-            \tId int auto_increment,
-            \tName char(30) null,
-            \tClass char(4) null,
-            \tconstraint Pupils_pk
-            \t\tprimary key (Id)
-            );
-            """;
-    public static String insertNewPupilQuery = """
-            INSERT INTO school.pupils (Name, Class)\s
-            VALUES (?,?);
-            """;
-    public static String insertNewTeacherQuery = """
-            INSERT INTO school.teachers (Name, Specialization, Class)\s
-            VALUES (?,?,?);
-            """;
-    public static String showPupils = "SELECT Name,Class From pupils";
-    public static String showTeachers = "SELECT Name,Specialization,Class From teachers";
-    public static String showLastPupilRecord = "SELECT Id,Name,Class FROM pupils ORDER BY ID DESC LIMIT 1";
-    public static String showLastTeacherRecord = "SELECT * FROM teachers ORDER BY ID DESC LIMIT 1";
-    public static String fingPupilById = """
-            Select Name,Class FROM pupils where pupils.Id =?;
-            """;
-    public static String fingTeacherById = """
-            Select Name,Specialization,Class FROM teachers where teachers.Id =?;
-            """;
-    public static String updatePupils = """
-            UPDATE pupils
-            set Name  = ?,
-                Class = ?
-            where id = ?;
-            """;
-    public static String updateTeachers = """
-            UPDATE teachers
-            set Name          = ?,
-                Specialization= ?,
-                Class         = ?
-            where id = ?;
-            """;
 
     public static void main(String[] args) {
 
@@ -72,20 +22,20 @@ public class main {
     public static void CreateTeachersTable() {
 
         Table.TableEditor forTeachers = new Table.TableEditor();
-        System.out.println(forTeachers.newTable(url, user, password, createTeachersTableQuery));
+        System.out.println(forTeachers.newTable(connectData, CreateTable.createTeachersTableQuery));
     }
 
     public static void CreatePupilsTable() {
 
         Table.TableEditor forPupils = new Table.TableEditor();
-        System.out.println(forPupils.newTable(url, user, password, createPupilsTableQuery));
+        System.out.println(forPupils.newTable(connectData, CreateTable.createPupilsTableQuery));
     }
 
     public static Human CreatePupilInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println("New record of " + te.newLine(url, user, password, insertNewPupilQuery, human).getClass() + " has been created");
-        Human createdHuman = te.showTheLastLine(url, user, password, showLastPupilRecord, human);
+        System.out.println("New record of " + te.newLine(connectData, InsertRecord.insertNewPupilQuery, human).getClass() + " has been created");
+        Human createdHuman = te.showTheLastLine(connectData, FindRecord.showLastPupilRecord, human);
         // System.out.println(createdHuman.id + " " + createdHuman.name)
         return createdHuman;
     }
@@ -93,8 +43,8 @@ public class main {
     public static Human CreateTeacherInDb(Human human) {
 
         Table.TableEditor te = new Table.TableEditor();
-        System.out.println("New record of " + te.newLine(url, user, password, insertNewTeacherQuery, human).getClass() + " has been created");
-        Human createdHuman = te.showTheLastLine(url, user, password, showLastTeacherRecord, human);
+        System.out.println("New record of " + te.newLine(connectData, InsertRecord.insertNewTeacherQuery, human).getClass() + " has been created");
+        Human createdHuman = te.showTheLastLine(connectData, FindRecord.showLastTeacherRecord, human);
         // System.out.println(createdHuman.id + " " + createdHuman.name);
         return human;
     }
@@ -135,24 +85,24 @@ public class main {
                 System.out.println("Enter teacher's id for updating his record");
                 Teacher teacher = new Teacher(sc.nextLong());
                 Table.TableEditor te = new Table.TableEditor();
-                Teacher teacherFromDb = (Teacher) te.showTheLine(url, user, password, fingTeacherById, teacher);
+                Teacher teacherFromDb = (Teacher) te.showTheLine(connectData, FindRecord.fingTeacherById, teacher);
                 System.out.println("Enter new name, specialization and class of the teacher");
                 sc.nextLine(); //кушаем линию
                 Teacher teacherForUpdate = new Teacher(teacherFromDb.id, sc.nextLine(), sc.nextLine(), sc.nextLine());
 
-                te.updateTheLine(url, user, password, updateTeachers, teacherForUpdate);
+                te.updateTheLine(connectData, UpdateRecord.updateTeachers, teacherForUpdate);
                 System.out.println("Record with id #" + "" + teacherForUpdate.id + " is " + teacherForUpdate.name + " " + teacherForUpdate.specialization + " " + teacherForUpdate.schoolClass);
             }
             case 8 -> {
                 System.out.println("Enter pupil's id for updating his record");
                 Pupil pupil = new Pupil(sc.nextLong());
                 Table.TableEditor te = new Table.TableEditor();
-                Pupil pupilFromDb = (Pupil) te.showTheLine(url, user, password, fingPupilById, pupil);
+                Pupil pupilFromDb = (Pupil) te.showTheLine(connectData, FindRecord.fingPupilById, pupil);
                 System.out.println("Enter new name and class of the pupil");
                 sc.nextLine(); //кушаем линию
                 Pupil pupilForUpdate = new Pupil(pupilFromDb.id, sc.nextLine(), sc.nextLine());
 
-                te.updateTheLine(url, user, password, updatePupils, pupilForUpdate);
+                te.updateTheLine(connectData, UpdateRecord.updatePupils, pupilForUpdate);
                 System.out.println("Record with id #" + "" + pupilForUpdate.id + " is " + pupilForUpdate.name + " " + pupilForUpdate.schoolClass);
             }
         }
@@ -161,13 +111,13 @@ public class main {
     public static List<Teacher> ShowTeachers() {
 
         Table.TableEditor te = new Table.TableEditor();
-        return te.showTheTable(url, user, password, showTeachers, Teacher.class);
+        return te.showTheTable(connectData, ShowTable.showTeachers, Teacher.class);
     }
 
     public static List<Pupil> ShowPupils() {
 
         Table.TableEditor te = new Table.TableEditor();
-        return te.showTheTable(url, user, password, showPupils, Pupil.class);
+        return te.showTheTable(connectData, ShowTable.showPupils, Pupil.class);
     }
 }
 
@@ -219,11 +169,11 @@ class Pupil extends Human {
 
 interface createTable {
 
-    default String newTable(String url, String user, String password, String sqlQuery) {
+    default String newTable(ConnectData connectData, String sqlQuery) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
+            Connection connect = DriverManager.getConnection(connectData.url, connectData.user, connectData.password);
             Statement statement = connect.createStatement();
             statement.execute(sqlQuery);
             return "table has been created";
@@ -235,11 +185,11 @@ interface createTable {
 }
 
 interface createLineInDB {
-    default Human newLine(String url, String user, String password, String sqlQuery, Human human) {
+    default Human newLine(ConnectData connectData, String sqlQuery, Human human) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
+            Connection connect = DriverManager.getConnection(connectData.url, connectData.user, connectData.password);
             PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
 
             switch (human.getClass().getName()) {
@@ -270,11 +220,11 @@ interface createLineInDB {
 
 interface updateLineInDB {
 
-    default Human updateTheLine(String url, String user, String password, String sqlQuery, Human human) {
+    default Human updateTheLine(ConnectData connectData, String sqlQuery, Human human) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
+            Connection connect = DriverManager.getConnection(connectData.url, connectData.user, connectData.password);
             PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery);
 
             switch (human.getClass().getName()) {
@@ -285,6 +235,7 @@ interface updateLineInDB {
                     preparedStatement.setString(3, teacher.schoolClass);
                     preparedStatement.setLong(4, teacher.id);
                     preparedStatement.execute();
+                    return teacher;
                 }
                 case "Pupil": {
                     Pupil pupil = (Pupil) human;
@@ -292,6 +243,7 @@ interface updateLineInDB {
                     preparedStatement.setString(2, pupil.schoolClass);
                     preparedStatement.setLong(3, pupil.id);
                     preparedStatement.execute();
+                    return pupil;
                 }
                 default:
                     break;
@@ -308,11 +260,11 @@ interface updateLineInDB {
 
 interface showTable {
 
-    default <T> List<T> showTheTable(String url, String user, String password, String sqlQuery, Class<T> returnedType) {
+    default <T> List<T> showTheTable(ConnectData connectData, String sqlQuery, Class<T> returnedType) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
+            Connection connect = DriverManager.getConnection(connectData.url, connectData.user, connectData.password);
             Statement statement = connect.createStatement();
             statement.executeQuery(sqlQuery);
             ResultSet resultset = statement.executeQuery(sqlQuery);
@@ -355,11 +307,11 @@ interface showTable {
 
 interface showLastLineInDB {
 
-    default Human showTheLastLine(String url, String user, String password, String sqlQuery, Human human) {
+    default Human showTheLastLine(ConnectData connectData, String sqlQuery, Human human) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
+            Connection connect = DriverManager.getConnection(connectData.url, connectData.user, connectData.password);
             Statement statement = connect.createStatement();
             statement.executeQuery(sqlQuery);
             ResultSet resultset = statement.executeQuery(sqlQuery);
@@ -397,11 +349,11 @@ interface showLastLineInDB {
 
 interface showLineInDB {
 
-    default Human showTheLine(String url, String user, String password, String sqlQuery, Human human) {
+    default Human showTheLine(ConnectData connectData, String sqlQuery, Human human) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connect = DriverManager.getConnection(url, user, password);
+            Connection connect = DriverManager.getConnection(connectData.url, connectData.user, connectData.password);
             PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery);
             preparedStatement.setLong(1, human.id);
             ResultSet rs = preparedStatement.executeQuery();
@@ -438,33 +390,33 @@ class Table {
 
     static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB {
         @Override
-        public String newTable(String url, String user, String password, String sqlQuery) {
-            return createTable.super.newTable(url, user, password, sqlQuery);
+        public String newTable(ConnectData connectData, String sqlQuery) {
+            return createTable.super.newTable(connectData, sqlQuery);
         }
 
         @Override
-        public Human newLine(String url, String user, String password, String sqlQuery, Human human) {
-            return createLineInDB.super.newLine(url, user, password, sqlQuery, human);
+        public Human newLine(ConnectData connectData, String sqlQuery, Human human) {
+            return createLineInDB.super.newLine(connectData, sqlQuery, human);
         }
 
         @Override
-        public <T> List<T> showTheTable(String url, String user, String password, String sqlQuery, Class<T> returnedType) {
-            return showTable.super.showTheTable(url, user, password, sqlQuery, returnedType);
+        public <T> List<T> showTheTable(ConnectData connectData, String sqlQuery, Class<T> returnedType) {
+            return showTable.super.showTheTable(connectData, sqlQuery, returnedType);
         }
 
         @Override
-        public Human showTheLastLine(String url, String user, String password, String sqlQuery, Human human) {
-            return showLastLineInDB.super.showTheLastLine(url, user, password, sqlQuery, human);
+        public Human showTheLastLine(ConnectData connectData, String sqlQuery, Human human) {
+            return showLastLineInDB.super.showTheLastLine(connectData, sqlQuery, human);
         }
 
         @Override
-        public Human showTheLine(String url, String user, String password, String sqlQuery, Human human) {
-            return showLineInDB.super.showTheLine(url, user, password, sqlQuery, human);
+        public Human showTheLine(ConnectData connectData, String sqlQuery, Human human) {
+            return showLineInDB.super.showTheLine(connectData, sqlQuery, human);
         }
 
         @Override
-        public Human updateTheLine(String url, String user, String password, String sqlQuery, Human human) {
-            return updateLineInDB.super.updateTheLine(url, user, password, sqlQuery, human);
+        public Human updateTheLine(ConnectData connectData, String sqlQuery, Human human) {
+            return updateLineInDB.super.updateTheLine(connectData, sqlQuery, human);
         }
     }
 
