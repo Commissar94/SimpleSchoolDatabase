@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Scanner;
 
 import SQL.*;
+import Users.*;
 
 public class main {
 
     public static ConnectData connectData = new ConnectData("School"); //получаем данные для подключения к базе "Школа"
-
     public static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -118,52 +118,6 @@ public class main {
 
         Table.TableEditor te = new Table.TableEditor();
         return te.showTheTable(connectData, ShowTable.showPupils, Pupil.class);
-    }
-}
-
-abstract class Human {
-    long id;
-    String name;
-    String schoolClass;
-}
-
-class Teacher extends Human {
-
-    String specialization;
-
-    Teacher(String name, String teacherClass, String specialization) {
-        this.name = name;
-        this.schoolClass = teacherClass;
-        this.specialization = specialization;
-    }
-
-    public Teacher(long id) {
-        this.id = id;
-    }
-
-    public Teacher(long id, String name, String teacherClass, String specialization) {
-        this.id = id;
-        this.name = name;
-        this.schoolClass = teacherClass;
-        this.specialization = specialization;
-    }
-}
-
-class Pupil extends Human {
-
-    Pupil(String name, String pupilClass) {
-        this.name = name;
-        this.schoolClass = pupilClass;
-    }
-
-    public Pupil(long id) {
-        this.id = id;
-    }
-
-    public Pupil(long id, String name, String pupilClass) {
-        this.id = id;
-        this.name = name;
-        this.schoolClass = pupilClass;
     }
 }
 
@@ -316,7 +270,6 @@ interface showLastLineInDB {
             statement.executeQuery(sqlQuery);
             ResultSet resultset = statement.executeQuery(sqlQuery);
 
-
             switch (human.getClass().getName()) {
                 case "Teacher": {
                     if (resultset.next()) {
@@ -388,7 +341,7 @@ interface showLineInDB {
 
 class Table {
 
-    static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB {
+     static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB {
         @Override
         public String newTable(ConnectData connectData, String sqlQuery) {
             return createTable.super.newTable(connectData, sqlQuery);
