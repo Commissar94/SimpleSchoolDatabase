@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Table {
 
-    public static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB {
+    public static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB, deleteLineInDB {
 
         public List<Teacher> ShowTeachers(ConnectData connectData) {
 
@@ -41,6 +41,11 @@ public class Table {
             Human createdHuman = te.showTheLastLine(connectData, FindRecord.showLastTeacherRecord, human);
             //System.out.println(createdHuman.id + " " + createdHuman.name);
             return human;
+        }
+
+        @Override
+        public Human deleteTheLine(ConnectData connectData, String sqlQuery, Human human) {
+            return deleteLineInDB.super.deleteTheLine(connectData, sqlQuery, human);
         }
 
         @Override
