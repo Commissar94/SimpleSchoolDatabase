@@ -13,6 +13,9 @@ public interface PupilInterface {
     Table.TableEditor te = table.new TableEditor();
     ConnectData connectData = new ConnectData("School"); //получаем данные для подключения к базе "Школа"
 
+    default void createDb(){
+        te.CreatePupilTableInDb(connectData);
+    }
 
     default Pupil create(Pupil pupil) {
         te.CreatePupilInDb(connectData, pupil);

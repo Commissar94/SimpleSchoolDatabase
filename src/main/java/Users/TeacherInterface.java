@@ -12,6 +12,9 @@ public interface TeacherInterface {
     Table.TableEditor te = table.new TableEditor();
     ConnectData connectData = new ConnectData("School"); //получаем данные для подключения к базе "Школа"
 
+    default void createDb() {
+        te.CreateTeacherTableInDb(connectData);
+    }
 
     default Teacher create(Teacher teacher) {
         te.CreateTeacherInDb(connectData, teacher);

@@ -1,29 +1,16 @@
 package Table;
 
 import SQL.ConnectData;
+import SQL.CreateTable;
 import SQL.FindRecord;
 import SQL.InsertRecord;
-import SQL.ShowTable;
 import Users.Human;
-import Users.Pupil;
-import Users.Teacher;
 
 import java.util.List;
 
 public class Table {
 
     public class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB, deleteLineInDB {
-
-        public List<Teacher> ShowTeachers(ConnectData connectData) {
-
-            Table.TableEditor te = new Table.TableEditor();
-            return te.showTheTable(connectData, ShowTable.showTeachers, Teacher.class);
-        }
-        public List<Pupil> ShowPupils(ConnectData connectData) {
-
-            Table.TableEditor te = new Table.TableEditor();
-            return te.showTheTable(connectData, ShowTable.showPupils, Pupil.class);
-        }
 
         public Human CreatePupilInDb(ConnectData connectData, Human human) {
 
@@ -41,6 +28,16 @@ public class Table {
             Human createdHuman = te.showTheLastLine(connectData, FindRecord.showLastTeacherRecord, human);
             //System.out.println(createdHuman.id + " " + createdHuman.name);
             return human;
+        }
+
+        public void CreateTeacherTableInDb(ConnectData connectData) {
+            Table.TableEditor te = new Table.TableEditor();
+            te.newTable(connectData, CreateTable.createTeachersTableQuery);
+        }
+
+        public void CreatePupilTableInDb(ConnectData connectData) {
+            Table.TableEditor te = new Table.TableEditor();
+            te.newTable(connectData, CreateTable.createPupilsTableQuery);
         }
 
         @Override

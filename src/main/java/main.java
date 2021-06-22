@@ -6,7 +6,7 @@ import Users.*;
 public class main {
 
     public static ConnectData connectData = new ConnectData("School"); //получаем данные для подключения к базе "Школа"
-    public static TeacherInterface ti = new TeacherInterface() {
+    public TeacherInterface ti = new TeacherInterface() {
         @Override
         public Teacher create(Teacher teacher) {
             return TeacherInterface.super.create(teacher);
@@ -27,7 +27,7 @@ public class main {
             return TeacherInterface.super.getById(id);
         }
     };
-    public static PupilInterface pi = new PupilInterface() {
+    public PupilInterface pi = new PupilInterface() {
         @Override
         public Pupil create(Pupil pupil) {
             return PupilInterface.super.create(pupil);
@@ -49,13 +49,10 @@ public class main {
         }
     };
 
-    public static void main(String[] args) {
+    public void main(String[] args) {
 
-        Table table = new Table();
-        Table.TableEditor te = table.new TableEditor();
-        te.newTable(connectData, CreateTable.createTeachersTableQuery); //создаем таблицу учителей (если ее нет)
-        te.newTable(connectData, CreateTable.createPupilsTableQuery); //создаем таблицу учеников (если ее нет)
-
+        ti.createDb(); //создание таблицы учителей
+        pi.createDb(); //создание таблицы учеников
 
         Teacher teacher = new Teacher("Vasya", "3 a", "povar");
         Teacher teacherForUpdate = new Teacher(5, "Vasya", "3 a", "povar");
