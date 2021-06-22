@@ -13,7 +13,8 @@ public interface deleteLineInDB {
     default Human deleteTheLine(ConnectData connectData, String sqlQuery, Human human) {
 
         try {
-            Table.TableEditor te = new Table.TableEditor();
+            Table table = new Table();
+            Table.TableEditor te = table.new TableEditor();
             Class.forName("com.mysql.jdbc.Driver");
             Connection connect = DriverManager.getConnection(connectData.url, connectData.user, connectData.password);
             PreparedStatement preparedStatement = connect.prepareStatement(sqlQuery);

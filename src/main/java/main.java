@@ -1,62 +1,58 @@
 
-import SQL.ConnectData;
-import SQL.CreateTable;
-import Table.Table;
-import Users.Pupil;
-import Users.Teacher;
-
-import java.util.Scanner;
+import SQL.*;
+import Table.*;
+import Users.*;
 
 public class main {
 
     public static ConnectData connectData = new ConnectData("School"); //получаем данные для подключения к базе "Школа"
-    public static Scanner sc = new Scanner(System.in);
-    public static Teacher.TeacherInterface ti = new Teacher.TeacherInterface() {
+    public static TeacherInterface ti = new TeacherInterface() {
         @Override
         public Teacher create(Teacher teacher) {
-            return Teacher.TeacherInterface.super.create(teacher);
+            return TeacherInterface.super.create(teacher);
         }
 
         @Override
         public Teacher update(Teacher teacher) {
-            return Teacher.TeacherInterface.super.update(teacher);
+            return TeacherInterface.super.update(teacher);
         }
 
         @Override
         public Teacher delete(Teacher teacher) {
-            return Teacher.TeacherInterface.super.delete(teacher);
+            return TeacherInterface.super.delete(teacher);
         }
 
         @Override
         public Teacher getById(long id) {
-            return Teacher.TeacherInterface.super.getById(id);
+            return TeacherInterface.super.getById(id);
         }
     };
-    public static Pupil.PupilInterface pi = new Pupil.PupilInterface() {
+    public static PupilInterface pi = new PupilInterface() {
         @Override
         public Pupil create(Pupil pupil) {
-            return Pupil.PupilInterface.super.create(pupil);
+            return PupilInterface.super.create(pupil);
         }
 
         @Override
         public Pupil update(Pupil pupil) {
-            return Pupil.PupilInterface.super.update(pupil);
+            return PupilInterface.super.update(pupil);
         }
 
         @Override
         public Pupil delete(Pupil pupil) {
-            return Pupil.PupilInterface.super.delete(pupil);
+            return PupilInterface.super.delete(pupil);
         }
 
         @Override
         public Pupil getById(long id) {
-            return Pupil.PupilInterface.super.getById(id);
+            return PupilInterface.super.getById(id);
         }
     };
 
     public static void main(String[] args) {
 
-        Table.TableEditor te = new Table.TableEditor();
+        Table table = new Table();
+        Table.TableEditor te = table.new TableEditor();
         te.newTable(connectData, CreateTable.createTeachersTableQuery); //создаем таблицу учителей (если ее нет)
         te.newTable(connectData, CreateTable.createPupilsTableQuery); //создаем таблицу учеников (если ее нет)
 

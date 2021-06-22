@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Table {
 
-    public static class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB, deleteLineInDB {
+    public class TableEditor implements createTable, createLineInDB, showTable, showLastLineInDB, showLineInDB, updateLineInDB, deleteLineInDB {
 
         public List<Teacher> ShowTeachers(ConnectData connectData) {
 
@@ -78,5 +78,4 @@ public class Table {
             return updateLineInDB.super.updateTheLine(connectData, sqlQuery, human);
         }
     }
-
 }
