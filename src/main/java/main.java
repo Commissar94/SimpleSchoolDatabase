@@ -1,5 +1,6 @@
 
 import SQL.*;
+import Table.Table;
 import Users.*;
 
 public class main {
@@ -8,7 +9,7 @@ public class main {
 
     public static void main(String[] args) {
 
-        TeacherInterface ti = new InterfaceOfTeacher();
+        TeacherInterface interfaceOfTeacher = new InterfaceOfTeacher();
         PupilInterface pi = new InterfaceOfPupil();
 
         Teacher teacher = new Teacher("Vasya", "3 a", "povar");
@@ -20,10 +21,10 @@ public class main {
         Pupil pupilForDelete = new Pupil(3);
 
 
-        Teacher createdTeacher = ti.create(teacher);
-        Teacher updatedTeacher = ti.update(teacherForUpdate);
-        Teacher teacherFromDelete = ti.delete(teacherForDelete);
-        Teacher teacherFromId = ti.getById(1);
+        Teacher createdTeacher = interfaceOfTeacher.create(teacher);
+        Teacher updatedTeacher = interfaceOfTeacher.update(teacherForUpdate);
+        Teacher teacherFromDelete = interfaceOfTeacher.delete(teacherForDelete);
+        Teacher teacherFromId = interfaceOfTeacher.getById(1);
 
         Pupil createdPupil = pi.create(pupil);
         Pupil updatedPupil = pi.update(pupilForUpdate);
@@ -34,28 +35,87 @@ public class main {
 
 class InterfaceOfTeacher implements TeacherInterface {
 
-    public void createTeacherTable() {
-        TeacherInterface.tableEditorForTeachers.CreateTeacherTableInDb(main.connectData);
-    }
+    Table table = new Table();
+    Table.TableEditor tableEditorForTeachers = table.new TableEditor();
+    ConnectData connectData = new ConnectData("School");
 
-    public TeacherInterface ti = new TeacherInterface() {
-    };
+
+    public void createTeacherTable() {
+        tableEditorForTeachers.CreateTeacherTableInDb(main.connectData);
+    }
 
     InterfaceOfTeacher() {
         createTeacherTable();
+    }
+
+    @Override
+    public Teacher create(Teacher teacher) {
+        tableEditorForTeachers.CreateTeacherInDb(connectData, teacher);
+        return teacher;
+    }
+
+    @Override
+    public Teacher update(Teacher teacher) {
+        tableEditorForTeachers.updateTheLine(connectData, UpdateRecord.updateTeachers, teacher);
+        return teacher;
+    }
+
+    @Override
+    public Teacher delete(Teacher teacher) {
+        tableEditorForTeachers.deleteTheLine(connectData, DeleteRecord.deleteTeacherQuery, teacher);
+        return teacher;
+    }
+
+    @Override
+    public Teacher getById(long id) {
+        Teacher teacher = new Teacher(4);
+        Teacher teacherFromDb = (Teacher) tableEditorForTeachers.showTheLine(connectData, FindRecord.fingTeacherById, teacher);
+        System.out.println("You are looking for Mr./Ms. " + teacherFromDb.name +
+                " who works in " + teacherFromDb.schoolClass + " grade " +
+                "This teacher is " + teacherFromDb.specialization);
+        return teacherFromDb;
     }
 }
 
 class InterfaceOfPupil implements PupilInterface {
 
-    public void createPupilTable() {
-        PupilInterface.tableEditorForPupils.CreatePupilTableInDb(connectData);
-    }
+    Table table = new Table();
+    Table.TableEditor tableEditorForPupils = table.new TableEditor();
+    ConnectData connectData = new ConnectData("School");
 
-    public PupilInterface pi = new PupilInterface() {
-    };
+    public void createPupilTable() {
+        tableEditorForPupils.CreatePupilTableInDb(connectData);
+    }
 
     InterfaceOfPupil() {
         createPupilTable();
+    }
+
+    @Override
+    public Pupil create(Pupil pupil) {
+        tableEditorForPupils.CreatePupilInDb(connectData, pupil);
+        return pupil;
+    }
+
+    @Override
+    public Pupil update(Pupil pupil) {
+        tableEditorForPupils.updateTheLine(connectData, UpdateRecord.updatePupils, pupil);
+        return pupil;
+    }
+
+    @Override
+    public Pupil delete(Pupil pupil) {
+        tableEditorForPupils.deleteTheLine(connectData, DeleteRecord.deletePupilQuery, pupil);
+        return pupil;
+    }
+
+    @Override
+    public Pupil getById(long id) {
+        Pupil pupil = new Pupil(4);
+        Pupil pupilFromDb = (Pupil) tableEditorForPupils.showTheLine(connectData, FindRecord.fingPupilById, pupil);
+        System.out.println("You are looking for Mr./Ms. " + pupilFromDb.name +
+                " who works in " + pupilFromDb.schoolClass + " grade " +
+                "This teacher is ");
+        return pupilFromDb;
     }
 }
