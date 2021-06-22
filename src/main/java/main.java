@@ -1,59 +1,15 @@
 
 import SQL.*;
-import Table.*;
 import Users.*;
 
 public class main {
 
-    public static ConnectData connectData = new ConnectData("School"); //получаем данные для подключения к базе "Школа"
-    public TeacherInterface ti = new TeacherInterface() {
-        @Override
-        public Teacher create(Teacher teacher) {
-            return TeacherInterface.super.create(teacher);
-        }
-
-        @Override
-        public Teacher update(Teacher teacher) {
-            return TeacherInterface.super.update(teacher);
-        }
-
-        @Override
-        public Teacher delete(Teacher teacher) {
-            return TeacherInterface.super.delete(teacher);
-        }
-
-        @Override
-        public Teacher getById(long id) {
-            return TeacherInterface.super.getById(id);
-        }
-    };
-    public PupilInterface pi = new PupilInterface() {
-
-        @Override
-        public Pupil create(Pupil pupil) {
-            return PupilInterface.super.create(pupil);
-        }
-
-        @Override
-        public Pupil update(Pupil pupil) {
-            return PupilInterface.super.update(pupil);
-        }
-
-        @Override
-        public Pupil delete(Pupil pupil) {
-            return PupilInterface.super.delete(pupil);
-        }
-
-        @Override
-        public Pupil getById(long id) {
-            return PupilInterface.super.getById(id);
-        }
-    };
+    public static ConnectData connectData = new ConnectData("School");//получаем данные для подключения к базе "Школа"
 
     public static void main(String[] args) {
 
-        TeacherInterface ti = new main().ti;
-        PupilInterface pi = new main().pi;
+        TeacherInterface ti = new InterfaceOfTeacher();
+        PupilInterface pi = new InterfaceOfPupil();
 
         Teacher teacher = new Teacher("Vasya", "3 a", "povar");
         Teacher teacherForUpdate = new Teacher(5, "Vasya", "3 a", "povar");
@@ -73,5 +29,33 @@ public class main {
         Pupil updatedPupil = pi.update(pupilForUpdate);
         Pupil pupilFromDelete = pi.delete(pupilForDelete);
         Pupil pupilFromId = pi.getById(3);
+    }
+}
+
+class InterfaceOfTeacher implements TeacherInterface {
+
+    public void createTeacherTable() {
+        TeacherInterface.tableEditorForTeachers.CreateTeacherTableInDb(main.connectData);
+    }
+
+    public TeacherInterface ti = new TeacherInterface() {
+    };
+
+    InterfaceOfTeacher() {
+        createTeacherTable();
+    }
+}
+
+class InterfaceOfPupil implements PupilInterface {
+
+    public void createPupilTable() {
+        PupilInterface.tableEditorForPupils.CreatePupilTableInDb(connectData);
+    }
+
+    public PupilInterface pi = new PupilInterface() {
+    };
+
+    InterfaceOfPupil() {
+        createPupilTable();
     }
 }
