@@ -18,21 +18,25 @@ public interface PupilInterface {
     }
 
     default Pupil create(Pupil pupil) {
+        createDb();
         te.CreatePupilInDb(connectData, pupil);
         return pupil;
     }
 
     default Pupil update(Pupil pupil) {
+        createDb();
         te.updateTheLine(connectData, UpdateRecord.updatePupils, pupil);
         return pupil;
     }
 
     default Pupil delete(Pupil pupil) {
+        createDb();
         te.deleteTheLine(connectData, DeleteRecord.deletePupilQuery, pupil);
         return pupil;
     }
 
     default Pupil getById(long id) {
+        createDb();
         Pupil pupil = new Pupil(4);
         Pupil pupilFromDb = (Pupil) te.showTheLine(connectData, FindRecord.fingPupilById, pupil);
         System.out.println("You are looking for Mr./Ms. " + pupilFromDb.name +

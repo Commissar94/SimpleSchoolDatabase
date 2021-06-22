@@ -28,6 +28,7 @@ public class main {
         }
     };
     public PupilInterface pi = new PupilInterface() {
+
         @Override
         public Pupil create(Pupil pupil) {
             return PupilInterface.super.create(pupil);
@@ -49,10 +50,10 @@ public class main {
         }
     };
 
-    public void main(String[] args) {
+    public static void main(String[] args) {
 
-        ti.createDb(); //создание таблицы учителей
-        pi.createDb(); //создание таблицы учеников
+        TeacherInterface ti = new main().ti;
+        PupilInterface pi = new main().pi;
 
         Teacher teacher = new Teacher("Vasya", "3 a", "povar");
         Teacher teacherForUpdate = new Teacher(5, "Vasya", "3 a", "povar");
